@@ -1,0 +1,3 @@
+[submodule "DNTK"]
+	path = DNTK
+	url = https://github.com/Crepe-Inc/DNTK.git
