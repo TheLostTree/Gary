@@ -1,4 +1,4 @@
-﻿namespace Gary;
+﻿namespace Gary.Interfaces;
 
 public interface IWidget
 {

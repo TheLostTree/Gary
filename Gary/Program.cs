@@ -1,13 +1,15 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 
-using Gary;
+namespace Gary;
 
 public class Program
 {
+
+    public static App app;
     static void Main(string[] args)
     {
-        App app = new App();
+        app = new App();
         app.Start();
     }
 

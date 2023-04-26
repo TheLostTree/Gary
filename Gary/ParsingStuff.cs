@@ -3,6 +3,7 @@ using DNToolKit.Configuration.Models;
 using SharpPcap.LibPcap;
 using DNToolKit;
 using DNToolKit.Configuration;
+using Gary.Interfaces;
 using DNTK = DNToolKit.DNToolKit;
 
 namespace Gary;
@@ -40,13 +41,13 @@ public class ParsingStuff : IDisposable
         await dntk.RunAsync();
     }
 
-    private string intfname;
-    public List<IPacketConsumer> consumers = new List<IPacketConsumer>();
+    private string? intfname;
+    public List<IPacketConsumer> consumers = new();
 
     public String GetInterfaceName()
     {
-
-        return intfname;
+        
+        return intfname ?? "None";
     }
 
     public void Dispose()

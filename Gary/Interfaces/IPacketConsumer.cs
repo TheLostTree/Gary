@@ -1,6 +1,6 @@
 ﻿using DNToolKit.AnimeGame;
 
-namespace Gary;
+namespace Gary.Interfaces;
 
 public interface IPacketConsumer
 {

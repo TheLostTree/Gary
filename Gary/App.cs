@@ -1,4 +1,6 @@
 ﻿using System.Numerics;
+using Gary.Interfaces;
+using Gary.Widgets;
 using SharpPcap.LibPcap;
 using Veldrid.Sdl2;
 
@@ -11,7 +13,7 @@ using ui = ImGuiNET.ImGui;
 
 public class App
 {
-    private Sdl2Window _window;
+    public Sdl2Window _window;
     private GraphicsDevice _gd;
     private CommandList _cl;
     private ImGuiRenderer _imguiRenderer;
@@ -46,27 +48,34 @@ public class App
     private IEnumerable<PcapInterface> _interfaces = DNToolKit.DNToolKit.GetAllNetworkInterfaces();
     private string[] descs;
 
-    private List<IWidget> _widgets = new List<IWidget>();
+    private List<IWidget> _widgets = new();
 
     private void Initialize()
     {
         parsingstuff = new ParsingStuff();
         var netwidge = new NetTrafficWidget();
+        var entitywidge = new EntityListWidget();
+        var damagetrack = new DamageTrackerWidget();
         _widgets.Add(netwidge);
+        _widgets.Add(entitywidge);
+        _widgets.Add(damagetrack);
         parsingstuff.consumers.Add(netwidge);
+        parsingstuff.consumers.Add(entitywidge);
+        parsingstuff.consumers.Add(damagetrack);
     }
 
     public void Start()
     {
         Initialize();
+        // unfortunately doesnt seem to work :(
+        ui.GetIO().ConfigFlags |= ImGuiConfigFlags.DockingEnable;
         
         while (_window.Exists)
         {
             var snapshot = _window.PumpEvents();
             _imguiRenderer.Update(1f / 60f, snapshot); // [2]
 
-            // unfortunately doesnt seem to work :(
-            // ui.GetIO().ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+            
             
             DrawUi();
 
@@ -162,6 +171,9 @@ public class App
         {
             Vector2 center = ui.GetMainViewport().GetCenter();
             ui.SetNextWindowPos(center, ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
+            ui.SetNextWindowSize(ui.GetMainViewport().Size * 0.8f);
+            ui.SetWindowFontScale(2);
+
             ui.OpenPopup("Choose PcapInterface");
         }
 
@@ -170,14 +182,8 @@ public class App
         
         if (ui.BeginPopupModal("Choose PcapInterface"))
         {
+
             ui.Text("Choose a Pcap Interface to listen to:");
-            // parsingstuff.Start();
-            
-            // if (ui.Combo("Choose PcapInterface", ref choice, descs, descs.Length,))
-            // {
-            //     ui.CloseCurrentPopup();
-            //     parsingstuff.Start(_interfaces.ToArray()[choice]);
-            // }
 
             string? cur_item = null;
             if (ui.BeginCombo("###combo", descs[0], ImGuiComboFlags.HeightLarge))
@@ -206,14 +212,18 @@ public class App
             
             
             ui.EndPopup();
+            ui.SetWindowFontScale(1);
+
         }
         
-        if(!parsingstuff.HasStarted) return;
         ShowMainMenu();
         
         //fullscreen
+
         ShowBaseScreen();
-        
+
+        if(!parsingstuff.HasStarted) return;
+
         foreach(IWidget widge in _widgets)
         {
             if(widge.isShow) widge.DoUI();
@@ -229,9 +239,9 @@ public class App
         ui.SetNextWindowPos(useworkarea ? vp.WorkPos : vp.Pos);
         ui.SetNextWindowSize(useworkarea ? vp.WorkSize : vp.Size);
         if (ui.Begin("window",
-                ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoSavedSettings))
+                ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoBringToFrontOnFocus))
         {
-            ui.Text(this.parsingstuff.GetInterfaceName());
+            ui.Text(this.parsingstuff.GetInterfaceName() );
         }
     }
 }
