@@ -3,36 +3,14 @@ using Common.Protobuf;
 using DNToolKit.AnimeGame;
 using DNToolKit.AnimeGame.Models;
 using Gary.Interfaces;
+using Gary.Widgets.DamageTracker;
 
 namespace Gary.Widgets;
 using ui = ImGuiNET.ImGui;
 
-internal class Actor
-{
-    public uint entityId;
-    public double totalDmg;
-    public double critPercent;
-
-    public int critCount;
-    public int hitCount;
-
-    public void AddHitEvt()
-    {
-        
-    }
-    
-    internal Actor()
-    {
-        
-    }
-}
 public class DamageTrackerWidget: IPacketConsumer, IWidget
 {
-    private Dictionary<uint,SceneEntityInfo> _entities = new();
-
-    private Dictionary<uint, AvatarInfo> _avatars = new();
-
-    private List<SceneAvatarInfo> _curTeam = new List<SceneAvatarInfo>();
+    private World world = new World();
 
     public void InsertPacket(AnimeGamePacket p)
     {
@@ -43,26 +21,16 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
         {
             case Opcode.SceneEntityDisappearNotify:
                 var sedn = (SceneEntityDisappearNotify)msg;
-                foreach (var entityid in sedn.EntityList)
-                {
-                    _entities.Remove(entityid);
-                }
+                world.OnSceneDisappearNotify(sedn);
                 break;
             case Opcode.SceneEntityAppearNotify:
                 var sean = (SceneEntityAppearNotify)msg;
-                foreach (var entity in sean.EntityList)
-                {
-                    if (_entities.ContainsKey(entity.EntityId!))
-                    {
-                        _entities[entity.EntityId!] = entity;
-                    }
-                    else
-                    {
-                        _entities.Add(entity.EntityId!, entity!);
-                    }
-                }
+                world.OnSceneEntityAppear(sean);
                 break;
-            
+            case Opcode.SceneTeamUpdateNotify:
+                var stun = (SceneTeamUpdateNotify)msg;
+                world.OnSceneTeamUpdate(stun);
+                break;
             case Opcode.UnionCmdNotify:
                 var ucn = (UnionCmdNotify)msg;
                 foreach (var unionCmd in ucn.CmdList)
@@ -72,8 +40,11 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
                 }
                 break;
             case Opcode.AbilityInvocationsNotify:
-                // this is special; in multiplayer the game will send ability invokes to the client; but not in single player
-                // therefore: handle everything probably
+                var ain = (AbilityInvocationsNotify)msg;
+                foreach (var abilityInvokeEntry in ain.Invokes)
+                {
+                    world.OnAbilityInvoke(abilityInvokeEntry);
+                }
                 break;
             case Opcode.CombatInvocationsNotify:
                 if (p.Sender == Sender.Client)
@@ -81,19 +52,11 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
                     var cin = (CombatInvocationsNotify)msg;
                     foreach (var combatInvokeEntry in cin.InvokeList)
                     {
-                        HandleCombatInvoke(combatInvokeEntry);
+                        world.OnCombatInvoke(combatInvokeEntry);
                     }
                 }
                 break;
             
-            
-            case Opcode.AvatarDataNotify:
-                var adn = (AvatarDataNotify)msg;
-                foreach (var avatarInfo in adn.AvatarList)
-                {
-                    _avatars.Add(avatarInfo.AvatarId, avatarInfo);
-                }
-                break;
         }
     }
 
@@ -109,19 +72,42 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
         //EntityMoveInfo
         //EvtBeingHitInfo
         //EvtBeingHealedNotify
-        
-        switch (entry.ArgumentType)
-        {
-            case CombatTypeArgument.EntityMove:
-                break;
-            case CombatTypeArgument.CombatEvtBeingHit:
-                break;
-            case CombatTypeArgument.CombatBeingHealedNtf:
-                break;
-            case CombatTypeArgument.SyncEntityPosition:
-                //maybe?
-                break;
-        }
+        //
+        // switch (entry.ArgumentType)
+        // {
+        //     case CombatTypeArgument.EntityMove:
+        //     {
+        //         var mv = EntityMoveInfo.Parser.ParseFrom(entry.CombatData);
+        //         if (_entities.ContainsKey(mv.EntityId))
+        //         {
+        //             var et = _entities[mv.EntityId];
+        //             
+        //             //maybe its a merge? maybe its a replace idk
+        //             et.MotionInfo.MergeFrom(mv.MotionInfo);
+        //         }
+        //
+        //     }
+        //         break;
+        //     case CombatTypeArgument.CombatEvtBeingHit:
+        //     {
+        //         var hitinfo = EvtBeingHitInfo.Parser.ParseFrom(entry.CombatData);
+        //         if (_entities.ContainsKey(hitinfo.AttackResult.DefenseId) &&
+        //             _entities.ContainsKey(hitinfo.AttackResult.AttackerId))
+        //         {
+        //             var target = _entities[hitinfo.AttackResult.DefenseId];
+        //             var attacker = _entities[hitinfo.AttackResult.AttackerId];
+        //
+        //             var damage = hitinfo.AttackResult.Damage;
+        //         }
+        //     }
+        //     
+        //         break;
+        //     case CombatTypeArgument.CombatBeingHealedNtf:
+        //         break;
+        //     case CombatTypeArgument.SyncEntityPosition:
+        //         //maybe?
+        //         break;
+        // }
     }
 
     public DamageTrackerWidget()
