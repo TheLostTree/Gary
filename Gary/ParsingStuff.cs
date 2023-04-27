@@ -2,6 +2,7 @@
 using DNToolKit.Configuration.Models;
 using SharpPcap.LibPcap;
 using DNToolKit;
+using DNToolKit.AnimeGame.Models;
 using DNToolKit.Configuration;
 using Gary.Interfaces;
 using DNTK = DNToolKit.DNToolKit;
@@ -23,7 +24,13 @@ public class ParsingStuff : IDisposable
 
     public void Start(PcapInterface x)
     {
-        dntk = new DNTK(ConfigurationProvider.LoadConfig<SniffConfig>(),x);
+        var cfg = ConfigurationProvider.LoadConfig<SniffConfig>();
+        #if true
+        cfg.LoadPackets = false;
+        cfg.PersistPackets = false;
+        
+        #endif
+        dntk = new DNTK(cfg,x);
         t = new Thread(ThreadMain);
         intfname = $"{x.Name} - {x.Description}";
         t.IsBackground = true;
@@ -35,7 +42,15 @@ public class ParsingStuff : IDisposable
     {
         dntk.PacketReceived += (_, p) =>
         {
-            consumers.ForEach(x=>{x.InsertPacket(p);});
+            foreach (var x in consumers)
+            {
+                x.InsertPacket(p);
+            }
+
+            if (p.Sender == Sender.Server)
+            {
+                Console.WriteLine(p.PacketType.ToString());
+            }
         };
         
         await dntk.RunAsync();

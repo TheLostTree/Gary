@@ -6,6 +6,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNToolKit", "DNTK\DNToolKit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "DNTK\Common\Common.csproj", "{19F62C55-442F-431A-BD51-8E321F0B12C6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tools", "Tools\Tools.csproj", "{2F4A393E-FA18-48B6-AC83-3101B9B56E09}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IridiumBackend", "DNTK\IridiumBackend\IridiumBackend.csproj", "{7BDAC926-BF85-4474-B4B8-34A34B0D495B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +28,13 @@ Global
 		{19F62C55-442F-431A-BD51-8E321F0B12C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19F62C55-442F-431A-BD51-8E321F0B12C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{19F62C55-442F-431A-BD51-8E321F0B12C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F4A393E-FA18-48B6-AC83-3101B9B56E09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F4A393E-FA18-48B6-AC83-3101B9B56E09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F4A393E-FA18-48B6-AC83-3101B9B56E09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F4A393E-FA18-48B6-AC83-3101B9B56E09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BDAC926-BF85-4474-B4B8-34A34B0D495B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BDAC926-BF85-4474-B4B8-34A34B0D495B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BDAC926-BF85-4474-B4B8-34A34B0D495B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BDAC926-BF85-4474-B4B8-34A34B0D495B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

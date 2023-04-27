@@ -6,6 +6,6 @@ public class AvatarEntity : BaseEntity
 {
     public AvatarEntity(SceneEntityInfo info) : base(info)
     {
-        
+        Id = info.Avatar.AvatarId;
     }
 }

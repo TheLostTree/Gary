@@ -1,12 +1,14 @@
-using System.Numerics;
+
 using Common.Protobuf;
+using Vector = Common.Protobuf.Vector;
 
 namespace Gary.Widgets.DamageTracker.Entity;
 
 public class BaseEntity
 {
     public uint EntityId;
-    public Vector3 CurrentPos;
+    public uint Id;
+    public Vector CurrentPos;
     
     
     public BaseEntity? Owner;
@@ -14,43 +16,22 @@ public class BaseEntity
     //backup, don't rely on etc
     protected SceneEntityInfo _info;
 
-    public Dictionary<FightProp, double> FightProps;
+    public Dictionary<FightProp, float> FightProps;
 
     protected BaseEntity()
     {
-        
+        CurrentPos = new Vector();
+        this.FightProps = new Dictionary<FightProp, float>();
     }
 
     protected BaseEntity(SceneEntityInfo info)
     {
         _info = info;
         EntityId = info.EntityId;
-        CurrentPos = new Vector3(info.MotionInfo.Pos.X, info.MotionInfo.Pos.Y, info.MotionInfo.Pos.Z);
+        CurrentPos = info.MotionInfo.Pos;
+        FightProps = info.FightPropList.ToDictionary(x => (FightProp)x.PropType, pair => pair.PropValue);
 
     }
 
-    
-
-    public static BaseEntity? FromSceneEntityInfo(SceneEntityInfo info)
-    {
-        switch (info.EntityType)
-        {
-            case ProtEntityType.ProtEntityAvatar:
-                return new AvatarEntity(info);
-            case ProtEntityType.ProtEntityMonster:
-                return new MonsterEntity(info);
-            case ProtEntityType.ProtEntityGadget:
-                return new GadgetEntity(info);
-            case ProtEntityType.ProtEntityNpc:
-                break;
-            default:
-                throw new NotImplementedException();
-        }
-
-        return null;
-    }
-    
-    
-    
 
 }

@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using Gary.Interfaces;
 using Gary.Widgets;
+using Gary.Widgets.DamageTracker;
 using SharpPcap.LibPcap;
 using Veldrid.Sdl2;
 
@@ -16,16 +17,17 @@ public class App
     public Sdl2Window _window;
     private GraphicsDevice _gd;
     private CommandList _cl;
-    private ImGuiRenderer _imguiRenderer;
-    
+    private Gary.ImGuiRenderer _imguiRenderer;
+
+    private bool alwaysOnTop;
     
     public App()
     {
         VeldridStartup.CreateWindowAndGraphicsDevice(
-            new WindowCreateInfo(50, 50, 960, 540, WindowState.Normal, "ImGui Test"),
+            new WindowCreateInfo(50, 50, 960, 540, WindowState.Normal, "Gary Toolkit"),
             out _window,
             out _gd);
-        
+        _window.SetCloseRequestedHandler(OnCloseAttempt);
 
         _cl = _gd.ResourceFactory.CreateCommandList();
 
@@ -43,6 +45,16 @@ public class App
         };
 
         descs = _interfaces.Select(x => $"{x.Name} - {x.Description}").ToArray();
+    }
+
+    private bool OnCloseAttempt()
+    {
+        if (parsingstuff is not null)
+        {
+            parsingstuff.Dispose();
+        }
+
+        return false;
     }
 
     private IEnumerable<PcapInterface> _interfaces = DNToolKit.DNToolKit.GetAllNetworkInterfaces();
@@ -76,7 +88,6 @@ public class App
             _imguiRenderer.Update(1f / 60f, snapshot); // [2]
 
             
-            
             DrawUi();
 
             _cl.Begin();
@@ -94,26 +105,12 @@ public class App
     private ParsingStuff parsingstuff;
 
 
-    private void ShowFileMenu()
+    private void ShowSettingsMenu()
     {
-        if (ui.MenuItem("New")) {}
-        if (ui.MenuItem("Open", "Ctrl+O")) {}
-        if (ui.BeginMenu("Open Recent"))
+        if (ui.MenuItem("New"))
         {
-            ui.MenuItem("fish_hat.c");
-            ui.MenuItem("fish_hat.inl");
-            ui.MenuItem("fish_hat.h");
-            if (ui.BeginMenu("More.."))
-            {
-                ui.MenuItem("Hello");
-                ui.MenuItem("Sailor");
-    
-                ui.EndMenu();
-            }
-            ui.EndMenu();
+            alwaysOnTop = !alwaysOnTop;
         }
-        if (ui.MenuItem("Save", "Ctrl+S")) {}
-        if (ui.MenuItem("Save As..")) {}
     }
 
     private void ShowWidgetsMenu()
@@ -140,9 +137,9 @@ public class App
     {
         if (ui.BeginMainMenuBar())
         {
-            if (ui.BeginMenu("File"))
+            if (ui.BeginMenu("Settings"))
             {
-                ShowFileMenu();
+                ShowSettingsMenu();
                 ui.EndMenu();
             }
             if (ui.BeginMenu("Widgets"))

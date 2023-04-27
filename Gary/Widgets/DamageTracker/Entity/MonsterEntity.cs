@@ -6,6 +6,6 @@ public class MonsterEntity: BaseEntity
 {
     public MonsterEntity(SceneEntityInfo info) : base(info)
     {
-        
+        Id = info.Monster.MonsterId;
     }
 }

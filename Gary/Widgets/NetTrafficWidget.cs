@@ -29,6 +29,8 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
     private static readonly Dictionary<System.Type, Dictionary<object, string>> dictionaries = new();
 
     private bool showNullMessages = true;
+    
+    private string searchText = String.Empty;
 
     private void TreeOutType(object? value)
     {
@@ -151,6 +153,9 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
             ui.SameLine();
             ui.Checkbox("Scroll to Bottom", ref scrollToBottom);
             
+            
+            ui.Text("Search");
+            ui.InputText("inputboxsearchlol", ref searchText, 100);
             if (ui.BeginTable("packet view table", 4, _tableFlags))
             {
                 ui.TableSetupScrollFreeze(0, 1);
@@ -165,6 +170,12 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
                     if (a4.Equals(messageIsNullText) && !showNullMessages)
                     {
                         continue;
+                    }
+
+                    if (searchText != String.Empty)
+                    {
+                        //filter by opcode basically?
+                        if(!a3.Contains(searchText)) continue;
                     }
                     ui.TableNextRow();
                     // var item = processed[row];
