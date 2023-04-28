@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Common.Protobuf;
 using Gary.Extentions;
 using Gary.Widgets.DamageTracker.Entity;
@@ -9,7 +10,7 @@ namespace Gary.Widgets.DamageTracker;
 
 public class World
 {
-    private Dictionary<uint, BaseEntity> _entities = new();
+    private ConcurrentDictionary<uint, BaseEntity> _entities = new();
 
     public World()
     {
@@ -60,8 +61,8 @@ public class World
         Task.Run(() =>
         {
             //don't remove it *immediately*
-            Task.Delay(5000);
-            _entities.Remove(entityId);
+            // Task.Delay(5000);
+            _entities.Remove(entityId, out var unused);
         });
     }
     public BaseEntity? GetEntity(uint id)
@@ -209,6 +210,8 @@ public class World
             {
                 Console.WriteLine("there is already a valid entity, so skipping");
                 newTeam.Add(sceneTeamAvatar.EntityId);
+                //todo: check lol
+                continue;
 
             };
             AvatarEntity avatarEntity = FromSceneEntityInfo(sceneTeamAvatar.SceneEntityInfo) as AvatarEntity;

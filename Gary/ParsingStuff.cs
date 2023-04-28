@@ -2,6 +2,7 @@
 using DNToolKit.Configuration.Models;
 using SharpPcap.LibPcap;
 using DNToolKit;
+using DNToolKit.AnimeGame;
 using DNToolKit.AnimeGame.Models;
 using DNToolKit.Configuration;
 using Gary.Interfaces;
@@ -33,7 +34,7 @@ public class ParsingStuff : IDisposable
         dntk = new DNTK(cfg,x);
         t = new Thread(ThreadMain);
         intfname = $"{x.Name} - {x.Description}";
-        t.IsBackground = true;
+        // t.IsBackground = true;
         HasStarted = true;
         t.Start();
     }
@@ -44,13 +45,13 @@ public class ParsingStuff : IDisposable
         {
             foreach (var x in consumers)
             {
-                x.InsertPacket(p);
+                x.InsertPacket(AnimeGamePacket.ParseRaw(p.ProtoBufBytes.ToArray(), (uint)p.PacketType, p.Sender));
             }
 
-            if (p.Sender == Sender.Server)
-            {
-                Console.WriteLine(p.PacketType.ToString());
-            }
+            // if (p.Sender == Sender.Server)
+            // {
+            //     Console.WriteLine(p.PacketType.ToString());
+            // }
         };
         
         await dntk.RunAsync();
