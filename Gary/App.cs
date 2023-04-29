@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
 using Gary.Interfaces;
 using Gary.Widgets;
 using Gary.Widgets.DamageTracker;
@@ -161,7 +162,7 @@ public class App
 
     private void DrawUi()
     {
-
+        
         //only  one main window on da bottom
 
         if (!parsingstuff.HasStarted)
@@ -175,6 +176,11 @@ public class App
         }
 
         // ui.ShowDemoWindow();
+        // shrug
+        
+        parsingstuff.ProcessAllQueuedPackets();
+        // sw.Stop();
+        // Console.WriteLine($"{sw.ElapsedMilliseconds}ms");
         
         
         if (ui.BeginPopupModal("Choose PcapInterface"))
@@ -220,11 +226,13 @@ public class App
         ShowBaseScreen();
 
         if(!parsingstuff.HasStarted) return;
-
+        Stopwatch sw = Stopwatch.StartNew();
         foreach(IWidget widge in _widgets)
         {
             if(widge.isShow) widge.DoUI();
         }
+        sw.Stop();
+        // Console.WriteLine($"widget ui: {sw.ElapsedMilliseconds}ms");
     }
 
 

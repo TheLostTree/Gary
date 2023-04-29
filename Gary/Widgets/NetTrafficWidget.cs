@@ -26,7 +26,7 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
     private ImGuiTableFlags _tableFlags = ImGuiTableFlags.ScrollY | ImGuiTableFlags.Resizable;
     private int focusedPacketTuple = -1;
 
-    private static readonly Dictionary<System.Type, Dictionary<object, string>> dictionaries = new();
+    private static readonly Dictionary<Type, Dictionary<object, string>> dictionaries = new();
 
     private bool showNullMessages = true;
     
@@ -156,14 +156,25 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
             
             ui.Text("Search");
             ui.InputText("inputboxsearchlol", ref searchText, 100);
+            
             if (ui.BeginTable("packet view table", 4, _tableFlags))
             {
+                
                 ui.TableSetupScrollFreeze(0, 1);
                 ui.TableSetupColumn("#");
                 ui.TableSetupColumn("Sender");
                 ui.TableSetupColumn("CmdId");
                 ui.TableSetupColumn("Data");
                 ui.TableHeadersRow();
+                unsafe
+                {
+                    // ImGuiListClipper clipper = new();
+                
+                
+                    ImGuiListClipperPtr ptr = new ImGuiListClipperPtr(ImGuiNative.ImGuiListClipper_ImGuiListClipper());
+                    // ptr.Begin(1000);
+                }   
+                
                 for (int row = 0; row < processed.Count; row++)
                 {
                     var (a1, a2, a3, a4) = processed[row];
@@ -171,6 +182,7 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
                     {
                         continue;
                     }
+                    
 
                     if (searchText != String.Empty)
                     {
@@ -179,7 +191,7 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
                     }
                     ui.TableNextRow();
                     // var item = processed[row];
-                    List<string> f = new List<string>() { a1, a2, a3, a4 };
+                    List<string> f = new List<string>() { a1, a2, a3, "" };
                     int i = 0;
                     foreach (string s in f)
                     {
@@ -241,8 +253,8 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
     public void InsertPacket(AnimeGamePacket p)
     {
         _gamePackets.Add(p);
-        var repr = p.ProtoBuf is null ? messageIsNullText : JsonFormatter.Default.Format(p.ProtoBuf);
-        processed.Add(((++count).ToString(), p.Sender.ToString(), p.PacketType.ToString(), repr));
+        // var repr = p.ProtoBuf is null ? messageIsNullText : JsonFormatter.Default.Format(p.ProtoBuf);
+        processed.Add(((++count).ToString(), p.Sender.ToString(), p.PacketType.ToString(), ""));
     }
 
     public string WidgetName { get; }

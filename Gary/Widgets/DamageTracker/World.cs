@@ -12,10 +12,18 @@ public class World
 {
     private ConcurrentDictionary<uint, BaseEntity> _entities = new();
 
+
+    public ulong now = 0;
+    
+
     public World()
     {
         
     }
+
+    //change to a Team class idk
+
+    public Team currentTeam = new Team();
 
 
     public void RegisterEntity(BaseEntity entity)
@@ -168,18 +176,40 @@ public class World
     public void OnCombatInvoke(CombatInvokeEntry entry)
     {
         var bytes = entry.CombatData.ToByteArray()!;
+        
         switch (entry.ArgumentType)
         {
             case CombatTypeArgument.CombatEvtBeingHit:
                 EvtBeingHitInfo info = EvtBeingHitInfo.Parser.ParseFrom(bytes);
                 var attacker = GetEntity(info.AttackResult.AttackerId);
                 var defender = GetEntity(info.AttackResult.DefenseId);
+                
+                
                 if (attacker is not null)
                 {
+                    var owner = GetRootEntityOwner(attacker);
                     Console.WriteLine(
                         $"{info.AttackResult.Damage} to {FriendlyNameUtil.FriendlyNames.GetOrDefault(defender?.Id ?? 0, "Defender")} " +
-                        $"by {FriendlyNameUtil.FriendlyNames.GetOrDefault(GetRootEntityOwner(attacker).Id, "Attacker")}");
+                        $"by {FriendlyNameUtil.FriendlyNames.GetOrDefault(owner.Id, "Attacker")}");
+
+                    if (owner is AvatarEntity)
+                    {
+                        currentTeam.AddDamageEvent(new DamageEvent()
+                                            {
+                                                attackerId = owner.EntityId,
+                                                damage =  info.AttackResult.Damage,
+                                                healed = 0,
+                                                nowMs = now
+                                            });
+                    }
+                    
+                    
+                    
                 }
+
+
+                
+                
                 
                 break;
             case CombatTypeArgument.EntityMove:
@@ -202,14 +232,14 @@ public class World
     public void OnSceneTeamUpdate(SceneTeamUpdateNotify notify)
     {
         // Console.WriteLine(JsonFormatter.Default.Format(notify));
-        var newTeam = new List<uint>();
+        var newTeam = new List<AvatarEntity>();
         foreach (var sceneTeamAvatar in notify.SceneTeamAvatarList)
         {
             if (sceneTeamAvatar.EntityId == 0) continue;
             if (_entities.ContainsKey(sceneTeamAvatar.EntityId))
             {
                 Console.WriteLine("there is already a valid entity, so skipping");
-                newTeam.Add(sceneTeamAvatar.EntityId);
+                newTeam.Add(_entities[sceneTeamAvatar.EntityId] as AvatarEntity);
                 //todo: check lol
                 continue;
 
@@ -221,30 +251,24 @@ public class World
             };
             
             RegisterEntity(avatarEntity);
-            Console.WriteLine("New Avatar: " + FriendlyNameUtil.FriendlyNames[avatarEntity.Id]);
-            newTeam.Add(sceneTeamAvatar.EntityId);
+            newTeam.Add(avatarEntity);
         }
-        
-        //remove old avatars
-        // foreach (var entity in _entities.Where(x=>x.Value is AvatarEntity).Select(x=> (x.Value as AvatarEntity)!).Where(x=>!newTeam.Contains(x.EntityId)))
-        // {
-        //     Console.WriteLine("Removing avatar: " + FriendlyNameUtil.FriendlyNames[entity.Id]);
-        //     DeregisterEntity(entity);
-        // }
-        foreach (var (key, value) in _entities)
+
+        foreach (var (_, value) in _entities)
         {
             if (value is AvatarEntity ae)
             {
-                if (!newTeam.Contains(ae.EntityId))
+                if (!newTeam.Exists(x=>x.EntityId == ae.EntityId))
                 {
                     //remove
-                    Console.WriteLine("Removing avatar: " + FriendlyNameUtil.FriendlyNames[ae.Id]);
+                    Console.WriteLine("Removing Avatar: " + FriendlyNameUtil.FriendlyNames[ae.Id]);
                     DeregisterEntity(ae.EntityId);
                 }
             }
         }
         
-        Console.WriteLine($"New Team! ${String.Join(',', newTeam.Select(x=>GetEntity(x) as AvatarEntity).Select(x=> FriendlyNameUtil.FriendlyNames[x.Id]))}");
+        Console.WriteLine($"New Team! {string.Join(", ", newTeam.Select(x=> FriendlyNameUtil.FriendlyNames[x.Id]))}");
+        currentTeam.Set(newTeam);
     }
 
     public void OnSceneEntityAppear(SceneEntityAppearNotify notify)

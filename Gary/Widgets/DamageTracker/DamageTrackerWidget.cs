@@ -2,7 +2,12 @@ using Common;
 using Common.Protobuf;
 using DNToolKit.AnimeGame;
 using DNToolKit.AnimeGame.Models;
+using Gary.Extentions;
 using Gary.Interfaces;
+using Gary.Widgets.DamageTracker.Entity;
+using Gary.Widgets.DamageTracker.Util;
+using ImGuiNET;
+using Veldrid.Sdl2;
 
 namespace Gary.Widgets.DamageTracker;
 using ui = ImGuiNET.ImGui;
@@ -14,6 +19,8 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
     public void InsertPacket(AnimeGamePacket p)
     {
         if(p.ProtoBuf is null) return;
+        
+        world.now = p.Metadata?.SentMs ?? world.now;
         
         var msg = p.ProtoBuf!;
         bool final = false;
@@ -37,7 +44,7 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
                     var ucn = (UnionCmdNotify)msg;
                     foreach (var unionCmd in ucn.CmdList)
                     {
-                        var pkt = AnimeGamePacket.ParseRaw(unionCmd.Body.ToByteArray(), unionCmd.MessageId,
+                        var pkt = AnimeGamePacket.ParseRaw(unionCmd.Body.ToByteArray(), p.MetadataBytes,unionCmd.MessageId,
                             Sender.Client);
                         InsertPacket(pkt);
                     }
@@ -102,6 +109,52 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
         }
         
     }
+
+    private void ShowDamageTable()
+    {
+
+        if (ui.Button("Reset"))
+        {
+            world.currentTeam.Reset();
+        }
+        if (ui.BeginTable("damage view table", 4, ImGuiTableFlags.ScrollY | ImGuiTableFlags.Resizable))
+        {
+            ui.TableSetupScrollFreeze(0, 1);
+            
+            
+            ui.TableSetupColumn("Name");
+            ui.TableSetupColumn("Total Damage");
+            ui.TableSetupColumn("Dps");
+            ui.TableSetupColumn("% of total damage");
+            ui.TableHeadersRow();
+
+            foreach (var avatarEntity in world.currentTeam.avatars)
+            {
+                ui.TableNextRow();
+
+                int i = 0;
+                ui.TableSetColumnIndex(i++);
+                ui.Text(FriendlyNameUtil.FriendlyNames.GetOrDefault(avatarEntity.Id, avatarEntity.Id.ToString()));
+                
+                ui.TableSetColumnIndex(i++);
+                ui.Text($"{NumberFormat.Format(avatarEntity.totalDamageDealt)}");
+                // Console.WriteLine(avatarEntity.totalDamageDealt);
+                
+                ui.TableSetColumnIndex(i++);
+                double dps = avatarEntity.totalDamageDealt*1000/(world.currentTeam.encounterLengthMs);
+                // if (dps == 0)
+                // {
+                //     Console.WriteLine("uh");
+                // }
+                ui.Text($"{NumberFormat.Format(dps)}");
+                
+                ui.TableSetColumnIndex(i);
+                ui.Text($"{NumberFormat.Format(avatarEntity.totalDamageDealt*100/world.currentTeam.totalDamage)}%");
+
+            }
+            ui.EndTable();
+        }
+    }
     
 
     public DamageTrackerWidget()
@@ -113,9 +166,10 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
     public bool isShow { get; set; }
     public void DoUI()
     {
-        ui.SetNextWindowSize(ui.GetMainViewport().Size * 0.75f);
+        // ui.SetNextWindowSize(ui.GetMainViewport().Size * 0.75f);
         if (ui.Begin("Damage Tracker Widget"))
         {
+            ShowDamageTable();
             ui.End();
         }
 

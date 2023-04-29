@@ -1,4 +1,5 @@
 ﻿
+using System.Collections.Concurrent;
 using DNToolKit.Configuration.Models;
 using SharpPcap.LibPcap;
 using DNToolKit;
@@ -23,6 +24,8 @@ public class ParsingStuff : IDisposable
         
     }
 
+    private ConcurrentQueue<AnimeGamePacket> packets = new ConcurrentQueue<AnimeGamePacket>();
+
     public void Start(PcapInterface x)
     {
         var cfg = ConfigurationProvider.LoadConfig<SniffConfig>();
@@ -43,11 +46,7 @@ public class ParsingStuff : IDisposable
     {
         dntk.PacketReceived += (_, p) =>
         {
-            foreach (var x in consumers)
-            {
-                x.InsertPacket(AnimeGamePacket.ParseRaw(p.ProtoBufBytes.ToArray(), (uint)p.PacketType, p.Sender));
-            }
-
+            packets.Enqueue(p);
             // if (p.Sender == Sender.Server)
             // {
             //     Console.WriteLine(p.PacketType.ToString());
@@ -55,6 +54,17 @@ public class ParsingStuff : IDisposable
         };
         
         await dntk.RunAsync();
+    }
+
+    public void ProcessAllQueuedPackets()
+    {
+        while (packets.TryDequeue(out var p))
+        {
+            foreach (var x in consumers)
+            {
+                x.InsertPacket(p);
+            }
+        }
     }
 
     private string? intfname;
@@ -68,10 +78,10 @@ public class ParsingStuff : IDisposable
 
     public void Dispose()
     {
-        dntk.Close();
+        dntk?.Close();
         Console.WriteLine("closed dntk");
 
-        t.Join();
+        t?.Join();
         Console.WriteLine("joined thread");
 
         GC.SuppressFinalize(this);
