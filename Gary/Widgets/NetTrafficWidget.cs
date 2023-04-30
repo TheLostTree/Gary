@@ -172,41 +172,45 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
                 
                 
                     ImGuiListClipperPtr ptr = new ImGuiListClipperPtr(ImGuiNative.ImGuiListClipper_ImGuiListClipper());
-                    // ptr.Begin(1000);
-                }   
-                
-                for (int row = 0; row < processed.Count; row++)
-                {
-                    var (a1, a2, a3, a4) = processed[row];
-                    if (a4.Equals(messageIsNullText) && !showNullMessages)
+                    ptr.Begin(processed.Count);
+
+                    while (ptr.Step())
                     {
-                        continue;
-                    }
+                        for (int row = ptr.DisplayStart; row < ptr.DisplayEnd; row++)
+                        {
+                            var (a1, a2, a3, a4) = processed[row];
+                            if (a4.Equals(messageIsNullText) && !showNullMessages)
+                            {
+                                continue;
+                            }
                     
 
-                    if (searchText != String.Empty)
-                    {
-                        //filter by opcode basically?
-                        if(!a3.Contains(searchText)) continue;
-                    }
-                    ui.TableNextRow();
-                    // var item = processed[row];
-                    List<string> f = new List<string>() { a1, a2, a3, "" };
-                    int i = 0;
-                    foreach (string s in f)
-                    {
-                        ui.TableSetColumnIndex(i);
-                        if (ui.Selectable(s, row == focusedPacketTuple, ImGuiSelectableFlags.SpanAllColumns))
-                        {
-                            focusedPacketTuple = row;
-                            updated = false;
-                            Sdl2Native.SDL_SetClipboardText(a4);
-                        }
+                            if (searchText != String.Empty)
+                            {
+                                //filter by opcode basically?
+                                if(!a3.Contains(searchText)) continue;
+                            }
+                            ui.TableNextRow();
+                            // var item = processed[row];
+                            List<string> f = new List<string>() { a1, a2, a3, a4 };
+                            int i = 0;
+                            foreach (string s in f)
+                            {
+                                ui.TableSetColumnIndex(i);
+                                if (ui.Selectable(s, row == focusedPacketTuple, ImGuiSelectableFlags.SpanAllColumns))
+                                {
+                                    focusedPacketTuple = row;
+                                    updated = false;
+                                    Sdl2Native.SDL_SetClipboardText(a4);
+                                }
                         
-                        i++;
+                                i++;
+                            }
+                        }
                     }
-                }
-
+                }   
+                
+                
                 if (scrollToBottom)
                 {
                     ui.SetScrollHereY(0.5f);
@@ -253,8 +257,8 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
     public void InsertPacket(AnimeGamePacket p)
     {
         _gamePackets.Add(p);
-        // var repr = p.ProtoBuf is null ? messageIsNullText : JsonFormatter.Default.Format(p.ProtoBuf);
-        processed.Add(((++count).ToString(), p.Sender.ToString(), p.PacketType.ToString(), ""));
+        var repr = p.ProtoBuf is null ? messageIsNullText : JsonFormatter.Default.Format(p.ProtoBuf);
+        processed.Add(((++count).ToString(), p.Sender.ToString(), p.PacketType.ToString(), repr));
     }
 
     public string WidgetName { get; }

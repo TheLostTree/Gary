@@ -68,13 +68,11 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
 
                     break;
                 case Opcode.CombatInvocationsNotify:
-                    if (p.Sender == Sender.Client)
+                    //trust server invokes more
+                    var cin = (CombatInvocationsNotify)msg;
+                    foreach (var combatInvokeEntry in cin.InvokeList)
                     {
-                        var cin = (CombatInvocationsNotify)msg;
-                        foreach (var combatInvokeEntry in cin.InvokeList)
-                        {
-                            world.OnCombatInvoke(combatInvokeEntry);
-                        }
+                        world.OnCombatInvoke(combatInvokeEntry, p.Sender);
                     }
 
                     break;
@@ -134,7 +132,7 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
 
                 int i = 0;
                 ui.TableSetColumnIndex(i++);
-                ui.Text(FriendlyNameUtil.FriendlyNames.GetOrDefault(avatarEntity.Id, avatarEntity.Id.ToString()));
+                ui.Text(avatarEntity.name);
                 
                 ui.TableSetColumnIndex(i++);
                 ui.Text($"{NumberFormat.Format(avatarEntity.totalDamageDealt)}");

@@ -29,7 +29,11 @@ public class BaseEntity
         _info = info;
         EntityId = info.EntityId;
         CurrentPos = info.MotionInfo.Pos;
-        FightProps = info.FightPropList.ToDictionary(x => (FightProp)x.PropType, pair => pair.PropValue);
+        FightProps = new Dictionary<FightProp, float>();
+        foreach (var fightPropPair in info.FightPropList)
+        {
+            FightProps[(FightProp)fightPropPair.PropType] = fightPropPair.PropValue;
+        }
 
     }
 

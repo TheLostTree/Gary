@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Common.Protobuf;
+using DNToolKit.AnimeGame.Models;
 using Gary.Extentions;
 using Gary.Widgets.DamageTracker.Entity;
 using Gary.Widgets.DamageTracker.Util;
@@ -173,13 +174,14 @@ public class World
         
     }
 
-    public void OnCombatInvoke(CombatInvokeEntry entry)
+    public void OnCombatInvoke(CombatInvokeEntry entry, Sender s)
     {
         var bytes = entry.CombatData.ToByteArray()!;
         
         switch (entry.ArgumentType)
         {
             case CombatTypeArgument.CombatEvtBeingHit:
+                if(s == Sender.Client) break;
                 EvtBeingHitInfo info = EvtBeingHitInfo.Parser.ParseFrom(bytes);
                 var attacker = GetEntity(info.AttackResult.AttackerId);
                 var defender = GetEntity(info.AttackResult.DefenseId);
