@@ -127,25 +127,44 @@ public class World
 
     public void OnAbilityInvoke(AbilityInvokeEntry entry, bool fromServer = false)
     {
-        return;
+        
         BaseEntity? entity = GetEntity(entry.EntityId);
         if (entity is null)
         {
-            Console.WriteLine("Missing entity: " + entry.EntityId);
+            // Console.WriteLine("Missing entity: " + entry.EntityId);
+            return;
         }
         byte[] data = entry.AbilityData.ToByteArray();
         switch (entry.ArgumentType)
         {
             case AbilityInvokeArgument.AbilityMetaAddNewAbility:
+                var metaAddAbility = AbilityMetaAddAbility.Parser.ParseFrom(data);
+                switch (metaAddAbility.Ability.AbilityName.TypeCase)
+                {
+                    case AbilityString.TypeOneofCase.Hash:
+                        
+                        entity.AddAbility(metaAddAbility.Ability.InstancedAbilityId, metaAddAbility.Ability.AbilityName.Hash, metaAddAbility.Ability.AbilityOverride.Hash);
+                        break;
+                    case AbilityString.TypeOneofCase.Str:
+                        entity.AddAbility(metaAddAbility.Ability.InstancedAbilityId, metaAddAbility.Ability.AbilityName.Str, metaAddAbility.Ability.AbilityOverride.Str);
+                        break;
+                    default:
+                        //cry
+                        break;
+                }
                 break;
             case AbilityInvokeArgument.AbilityMetaRemoveAbility:
+                
+                entity.RemoveAbility(entry.Head.InstancedAbilityId);
                 break;
             case AbilityInvokeArgument.AbilityActionCreateGadget:
+                
                 var g = AbilityActionCreateGadget.Parser.ParseFrom(data);
                 if (!g.Pos.Equals(new Vector()))
                 {
                     abilityinvokecreategadget.Add(g.Pos);
                 }
+                Console.WriteLine($"new gadget spawned by: {entry.EntityId} bc of {JsonFormatter.Default.Format(entry.Head)}");
 
                 break;
             default:
@@ -171,7 +190,14 @@ public class World
 
     public void OnAbilityChange(AbilityChangeNotify notify)
     {
+        var ent = GetEntity(notify.EntityId);
+        if(ent is null) return;
         
+        foreach (var abilityEmbryo in notify.AbilityControlBlock.AbilityEmbryoList)
+        {
+            //theres an override hash as well? idk if i
+            ent.AddAbility(abilityEmbryo.AbilityId, abilityEmbryo.AbilityNameHash, abilityEmbryo.AbilityOverrideNameHash);
+        }
     }
 
     public void OnCombatInvoke(CombatInvokeEntry entry, Sender s)
@@ -190,9 +216,37 @@ public class World
                 if (attacker is not null)
                 {
                     var owner = GetRootEntityOwner(attacker);
+                    
+                    
+
+                    if (info.AttackResult.AbilityIdentifier is null)
+                    {
+                        //null for sword carrying characters?
+                        break;
+                    }
+                    //
+                    // var caster = GetEntity(info.AttackResult.AbilityIdentifier.AbilityCasterId);
+                    // owner = caster;
+                    var instancedAbilityId = info.AttackResult.AbilityIdentifier.InstancedAbilityId;
+                    var abilityName =
+                        owner.Abilities.GetOrDefault(instancedAbilityId,
+                            "unknown :(");
+                    if (abilityName == "unknown :(")
+                    {
+                        Console.WriteLine(instancedAbilityId);
+                        Console.WriteLine(info.AttackResult.AbilityIdentifier.AbilityCasterId);
+                        var caster = GetEntity(info.AttackResult.AbilityIdentifier.AbilityCasterId);
+                        if (caster is not null)
+                        {
+                            var casterowner = GetRootEntityOwner(caster);
+                        }
+                        
+                    }
                     Console.WriteLine(
                         $"{info.AttackResult.Damage} to {FriendlyNameUtil.FriendlyNames.GetOrDefault(defender?.Id ?? 0, "Defender")} " +
-                        $"by {FriendlyNameUtil.FriendlyNames.GetOrDefault(owner.Id, "Attacker")}");
+                        $"by {FriendlyNameUtil.FriendlyNames.GetOrDefault(owner.Id, "Attacker")} with ability {abilityName}");
+                    
+                    
 
                     if (owner is AvatarEntity)
                     {
@@ -201,18 +255,11 @@ public class World
                                                 attackerId = owner.EntityId,
                                                 damage =  info.AttackResult.Damage,
                                                 healed = 0,
-                                                nowMs = now
+                                                nowMs = now,
+                                                abilitySource = abilityName
                                             });
                     }
-                    
-                    
-                    
                 }
-
-
-                
-                
-                
                 break;
             case CombatTypeArgument.EntityMove:
             {

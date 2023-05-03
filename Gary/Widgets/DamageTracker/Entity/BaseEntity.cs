@@ -1,5 +1,7 @@
 
 using Common.Protobuf;
+using Gary.Extentions;
+using Gary.Widgets.DamageTracker.Util;
 using Vector = Common.Protobuf.Vector;
 
 namespace Gary.Widgets.DamageTracker.Entity;
@@ -23,6 +25,8 @@ public class BaseEntity
         CurrentPos = new Vector();
         this.FightProps = new Dictionary<FightProp, float>();
     }
+    
+    public Dictionary<ulong, String> Abilities = new Dictionary<ulong, string>();
 
     protected BaseEntity(SceneEntityInfo info)
     {
@@ -35,6 +39,23 @@ public class BaseEntity
             FightProps[(FightProp)fightPropPair.PropType] = fightPropPair.PropValue;
         }
 
+    }
+
+    public void AddAbility(uint instancedAbilityId, uint hash, uint overrideHash = 0)
+    {
+        string abilityName = EmbryoUtil.Embryos.GetOrDefault(hash, $"Unknown_{hash}");
+        Abilities[instancedAbilityId] = abilityName;    
+
+    }
+    
+    public void AddAbility(uint instancedAbilityId, string abilityName, string abilityOverrideName = "")
+    {
+        Abilities[instancedAbilityId] = abilityName;
+    }
+
+    public void RemoveAbility(uint instancedAbilityId)
+    {
+        Abilities.Remove(instancedAbilityId);
     }
 
 

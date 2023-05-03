@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Common;
 using Common.Protobuf;
 using DNToolKit.AnimeGame;
@@ -24,8 +25,8 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
         
         var msg = p.ProtoBuf!;
         bool final = false;
-        try
-        {
+        // try
+        // {
             switch (p.PacketType)
             {
                 case Opcode.SceneEntityDisappearNotify:
@@ -100,14 +101,18 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
             {
                 // Console.WriteLine(p.PacketType.ToString());
             }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        // }
+        // catch (Exception e)
+        // {
+        //     // Console.WriteLine(e.ToString());
+        //     throw e;
+        // }
         
     }
 
+
+    private int selectedRow = -1;
+    private AvatarEntity? selectedAvatar;
     private void ShowDamageTable()
     {
 
@@ -115,7 +120,7 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
         {
             world.currentTeam.Reset();
         }
-        if (ui.BeginTable("damage view table", 4, ImGuiTableFlags.ScrollY | ImGuiTableFlags.Resizable))
+        if (ui.BeginTable("damage view table", 4))
         {
             ui.TableSetupScrollFreeze(0, 1);
             
@@ -129,14 +134,21 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
             foreach (var avatarEntity in world.currentTeam.avatars)
             {
                 ui.TableNextRow();
+                int row = ui.TableGetRowIndex();
 
                 int i = 0;
                 ui.TableSetColumnIndex(i++);
-                ui.Text(avatarEntity.name);
+                if (ui.Selectable(avatarEntity.name, row == selectedRow, ImGuiSelectableFlags.SpanAllColumns))
+                {
+                    selectedRow = row;
+                }
                 
                 ui.TableSetColumnIndex(i++);
-                ui.Text($"{NumberFormat.Format(avatarEntity.totalDamageDealt)}");
                 // Console.WriteLine(avatarEntity.totalDamageDealt);
+                if (ui.Selectable($"{NumberFormat.Format(avatarEntity.totalDamageDealt)}", row == selectedRow, ImGuiSelectableFlags.SpanAllColumns))
+                {
+                    selectedRow = row;
+                }
                 
                 ui.TableSetColumnIndex(i++);
                 double dps = avatarEntity.totalDamageDealt*1000/(world.currentTeam.encounterLengthMs);
@@ -144,13 +156,46 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
                 // {
                 //     Console.WriteLine("uh");
                 // }
-                ui.Text($"{NumberFormat.Format(dps)}");
+                if (ui.Selectable($"{NumberFormat.Format(dps)}", row == selectedRow, ImGuiSelectableFlags.SpanAllColumns))
+                {
+                    selectedRow = row;
+                }
                 
                 ui.TableSetColumnIndex(i);
-                ui.Text($"{NumberFormat.Format(avatarEntity.totalDamageDealt*100/world.currentTeam.totalDamage)}%");
+                if (ui.Selectable($"{NumberFormat.Format(avatarEntity.totalDamageDealt*100/world.currentTeam.totalDamage)}%", row == selectedRow, ImGuiSelectableFlags.SpanAllColumns))
+                {
+                    selectedRow = row;
+                }
+
+                if (selectedRow == row)
+                {
+                    selectedAvatar = avatarEntity;
+                }
 
             }
             ui.EndTable();
+        }
+
+        if (selectedAvatar is not null)
+        {
+            if (ui.BeginTable("attack source view table", 2, ImGuiTableFlags.ScrollY | ImGuiTableFlags.Resizable))
+            {
+                ui.TableSetupColumn("Ability Name");
+                ui.TableSetupColumn("Damage Instances");
+                ui.TableHeadersRow();
+                foreach (var keyValuePair in selectedAvatar.attackSource)
+                {
+                    // Console.WriteLine(keyValuePair.Key);
+                    ui.TableNextRow();
+                    ui.TableNextColumn();
+                    ui.Text(keyValuePair.Key);
+                    ui.TableNextColumn();
+                    ui.Text(keyValuePair.Value.count.ToString());
+                }
+                
+                ui.EndTable();
+            }
+            
         }
     }
     

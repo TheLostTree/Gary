@@ -166,7 +166,7 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
                 ui.TableSetupColumn("CmdId");
                 ui.TableSetupColumn("Data");
                 ui.TableHeadersRow();
-                unsafe
+                unsafe //bc of listclipperptr
                 {
                     // ImGuiListClipper clipper = new();
                 

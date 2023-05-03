@@ -58,6 +58,9 @@ public class Team
         avatar.totalHealed += damageEvent.healed;
         lastDamageInstanceMs = damageEvent.nowMs;
 
+        avatar.idk(damageEvent.abilitySource);
+
+
 
     }
 }

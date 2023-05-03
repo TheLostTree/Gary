@@ -7,4 +7,6 @@ public class DamageEvent
     public uint attackerId;
 
     public ulong nowMs;
+
+    public String abilitySource;
 }
