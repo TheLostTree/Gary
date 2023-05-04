@@ -1,6 +1,7 @@
 
 using Common.Protobuf;
 using Gary.Extentions;
+using Gary.Widgets.DamageTracker.Ability;
 using Gary.Widgets.DamageTracker.Util;
 using Vector = Common.Protobuf.Vector;
 
@@ -20,14 +21,14 @@ public class BaseEntity
 
     public Dictionary<FightProp, float> FightProps;
 
+    public AbilityManager AbilityManager = new AbilityManager();
+
     protected BaseEntity()
     {
         CurrentPos = new Vector();
-        this.FightProps = new Dictionary<FightProp, float>();
+        FightProps = new Dictionary<FightProp, float>();
     }
     
-    public Dictionary<ulong, String> Abilities = new Dictionary<ulong, string>();
-
     protected BaseEntity(SceneEntityInfo info)
     {
         _info = info;
@@ -41,21 +42,29 @@ public class BaseEntity
 
     }
 
+    public string GetFriendlyName()
+    {
+        return FriendlyNameUtil.FriendlyNames.GetOrDefault(Id, Id.ToString());
+    }
+
     public void AddAbility(uint instancedAbilityId, uint hash, uint overrideHash = 0)
     {
         string abilityName = EmbryoUtil.Embryos.GetOrDefault(hash, $"Unknown_{hash}");
-        Abilities[instancedAbilityId] = abilityName;    
+        Console.WriteLine($"Adding ability {abilityName} to {GetFriendlyName()}");
+        AbilityManager.Abilities[instancedAbilityId] = abilityName;    
 
     }
     
     public void AddAbility(uint instancedAbilityId, string abilityName, string abilityOverrideName = "")
     {
-        Abilities[instancedAbilityId] = abilityName;
+        Console.WriteLine($"Adding ability {abilityName} to {GetFriendlyName()}");
+        AbilityManager.Abilities[instancedAbilityId] = abilityName;
     }
 
     public void RemoveAbility(uint instancedAbilityId)
     {
-        Abilities.Remove(instancedAbilityId);
+        Console.WriteLine($"Removing ability {AbilityManager.Abilities[instancedAbilityId]} from {GetFriendlyName()}");
+        AbilityManager.Abilities.Remove(instancedAbilityId);
     }
 
 

@@ -49,4 +49,6 @@ public class AvatarEntity : BaseEntity
         totalDamageDealt = 0;
         totalHealed = 0;
     }
+    
+    
 }
