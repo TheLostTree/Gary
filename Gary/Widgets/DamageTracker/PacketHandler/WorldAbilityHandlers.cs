@@ -16,7 +16,7 @@ public partial class World
         BaseEntity? entity = GetEntity(entry.EntityId);
         if (entity is null)
         {
-            // Console.WriteLine("Missing entity: " + entry.EntityId);
+            Console.WriteLine("Missing entity: " + entry.EntityId);
             return;
         }
 
@@ -28,6 +28,7 @@ public partial class World
         
         
         byte[] data = entry.AbilityData.ToByteArray();
+        //meta modifier change, meta global float, reinit override map
         switch (entry.ArgumentType)
         {
             case AbilityInvokeArgument.AbilityNone:
@@ -39,7 +40,7 @@ public partial class World
                     var mixinIndex = (int)(localId >> 9) & 0b111111111;
                     var configIndex = (int)(localId >> 15) & 0b111111111;
                     var actionIndex = (int)(localId >> 21) & 0b111111111;
-                    Console.WriteLine($"log: {abilityName} {type} {modifierIndex} {mixinIndex} {configIndex} {actionIndex}");
+                    //Console.WriteLine($"log: {abilityName} {type} {modifierIndex} {mixinIndex} {configIndex} {actionIndex}");
                 }
                 break;
             case AbilityInvokeArgument.AbilityMetaAddNewAbility:
@@ -79,7 +80,7 @@ public partial class World
                 {
                     Console.WriteLine("trigger entity is not owner");
                 }
-                Console.WriteLine($"{triggerEntity.GetFriendlyName()} triggered {((ElementalReactionType)er.ElementReactionType).ToString()}");
+                Console.WriteLine($"{owner.GetFriendlyName()} triggered {((ElementalReactionType)er.ElementReactionType).ToString()}");
                 break;
             default:
                 break;
@@ -136,12 +137,32 @@ public partial class World
                     if (info.AttackResult.AbilityIdentifier is not null)
                     {
                         var instancedAbilityId = info.AttackResult.AbilityIdentifier?.InstancedAbilityId;
+                        var instancedModifierId = info.AttackResult.AbilityIdentifier?.InstancedModifierId;
+
+                        var modifierOwnerId = info.AttackResult.AbilityIdentifier?.ModifierOwnerId;
+                        BaseEntity? modifierOwner = null;
+                        if (modifierOwnerId is not null)
+                        {
+                            modifierOwner = GetEntity(modifierOwnerId.Value);
+                            
+                        }
+                        
+                        
                         var abilityName = "normal attack or something idk";
 
                         if (instancedAbilityId is not null)
                         {
-                            abilityName = owner.AbilityManager.Abilities.GetOrDefault(instancedAbilityId.Value,
-                                "unknown ability");
+                            abilityName = attacker.AbilityManager.Abilities.GetOrDefault(instancedAbilityId.Value,
+                                null!);
+                            if (abilityName is null)
+                            {
+                                Console.WriteLine(string.Join("\n", attacker.AbilityManager.Abilities));
+                                Console.WriteLine(instancedAbilityId);
+                                Console.WriteLine(instancedModifierId);
+                                Console.WriteLine(attacker.Id);
+                                Console.WriteLine($"attacker entity id: {attacker.EntityId}");
+                                abilityName = "unknown ability";
+                            }   
                         }
                             
                             

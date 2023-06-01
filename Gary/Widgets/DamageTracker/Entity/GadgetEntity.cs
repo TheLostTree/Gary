@@ -11,7 +11,10 @@ public class GadgetEntity : BaseEntity
 
     public GadgetEntity(EvtCreateGadgetNotify notify)
     {
+        //I THINK!
+        this.Id = notify.ConfigId;
         EntityId = notify.EntityId;
         CurrentPos = notify.InitPos;
+        
     }
 }

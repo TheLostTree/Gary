@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tools", "Tools\Tools.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IridiumBackend", "DNTK\IridiumBackend\IridiumBackend.csproj", "{7BDAC926-BF85-4474-B4B8-34A34B0D495B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sandy", "Sandy\Sandy.csproj", "{13FEFCB9-6FA3-4BF5-AC96-3174CFA514B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{7BDAC926-BF85-4474-B4B8-34A34B0D495B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BDAC926-BF85-4474-B4B8-34A34B0D495B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BDAC926-BF85-4474-B4B8-34A34B0D495B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13FEFCB9-6FA3-4BF5-AC96-3174CFA514B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13FEFCB9-6FA3-4BF5-AC96-3174CFA514B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13FEFCB9-6FA3-4BF5-AC96-3174CFA514B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13FEFCB9-6FA3-4BF5-AC96-3174CFA514B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

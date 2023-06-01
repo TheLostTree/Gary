@@ -143,8 +143,6 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
     private static string messageIsNullText = "Message is null (probably missing definition)";
     public void DoUI()
     {
-        
-        
         if (ui.Begin("Packet Viewer"))
         {
 
@@ -172,24 +170,16 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
                 
                 
                     ImGuiListClipperPtr ptr = new ImGuiListClipperPtr(ImGuiNative.ImGuiListClipper_ImGuiListClipper());
+                    var filtered =
+                        processed.Where(x => x.Item3.Contains(searchText, StringComparison.OrdinalIgnoreCase));
                     ptr.Begin(processed.Count);
-
                     while (ptr.Step())
                     {
                         for (int row = ptr.DisplayStart; row < ptr.DisplayEnd; row++)
                         {
+                            //todo: fix search
                             var (a1, a2, a3, a4) = processed[row];
-                            if (a4.Equals(messageIsNullText) && !showNullMessages)
-                            {
-                                continue;
-                            }
-                    
-
-                            if (searchText != String.Empty)
-                            {
-                                //filter by opcode basically?
-                                if(!a3.Contains(searchText)) continue;
-                            }
+                            
                             ui.TableNextRow();
                             // var item = processed[row];
                             List<string> f = new List<string>() { a1, a2, a3, a4 };
