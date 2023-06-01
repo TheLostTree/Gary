@@ -167,9 +167,10 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
                 unsafe //bc of listclipperptr
                 {
                     // ImGuiListClipper clipper = new();
-                
-                
-                    ImGuiListClipperPtr ptr = new ImGuiListClipperPtr(ImGuiNative.ImGuiListClipper_ImGuiListClipper());
+
+
+                    var clipperPtr = ImGuiNative.ImGuiListClipper_ImGuiListClipper();
+                    ImGuiListClipperPtr ptr = new ImGuiListClipperPtr(clipperPtr);
                     var filtered =
                         processed.Where(x => x.Item3.Contains(searchText, StringComparison.OrdinalIgnoreCase));
                     ptr.Begin(processed.Count);
@@ -198,6 +199,10 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
                             }
                         }
                     }
+                    
+                    
+                    //call destructor
+                    ImGuiNative.ImGuiListClipper_destroy(clipperPtr);
                 }   
                 
                 
