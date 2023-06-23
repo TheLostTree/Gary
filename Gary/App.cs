@@ -226,12 +226,12 @@ public class App
         ShowBaseScreen();
 
         if(!parsingstuff.HasStarted) return;
-        Stopwatch sw = Stopwatch.StartNew();
+        // Stopwatch sw = Stopwatch.StartNew();
         foreach(IWidget widge in _widgets)
         {
             if(widge.isShow) widge.DoUI();
         }
-        sw.Stop();
+        // sw.Stop();
         // Console.WriteLine($"widget ui: {sw.ElapsedMilliseconds}ms");
     }
 

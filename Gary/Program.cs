@@ -18,6 +18,7 @@ public class Program
         Console.WriteLine(EmbryoUtil.Embryos.Count);
         Console.WriteLine(FriendlyNameUtil.FriendlyNames.Count);
         app = new App();
+         
         app.Start();
     }
 

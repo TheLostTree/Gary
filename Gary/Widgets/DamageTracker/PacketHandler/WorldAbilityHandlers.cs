@@ -1,3 +1,4 @@
+#define FIXLATER
 using Common.Protobuf;
 using DNToolKit.AnimeGame.Models;
 using Gary.Extentions;
@@ -31,7 +32,7 @@ public partial class World
         //meta modifier change, meta global float, reinit override map
         switch (entry.ArgumentType)
         {
-            case AbilityInvokeArgument.AbilityNone:
+            case AbilityInvokeArgument.None:
                 if (entity.AbilityManager.Abilities.TryGetValue(instancedAbilityId, out var abilityName))
                 {
                     // undo localId = (uint)Type + (ModifierIndex << 3) + (MixinIndex << 9) + (ConfigIndex << 15) + (ActionIndex << 21)  
@@ -43,7 +44,8 @@ public partial class World
                     //Console.WriteLine($"log: {abilityName} {type} {modifierIndex} {mixinIndex} {configIndex} {actionIndex}");
                 }
                 break;
-            case AbilityInvokeArgument.AbilityMetaAddNewAbility:
+            // case AbilityInvokeArgument.AbilityMetaAddNewAbility:
+            case AbilityInvokeArgument.MetaAddNewAbility:
                 var metaAddAbility = AbilityMetaAddAbility.Parser.ParseFrom(data);
                 switch (metaAddAbility.Ability.AbilityName.TypeCase)
                 {
@@ -56,11 +58,11 @@ public partial class World
                         break;
                 }
                 break;
-            case AbilityInvokeArgument.AbilityMetaRemoveAbility:
+            case AbilityInvokeArgument.MetaRemoveAbility:
                 
                 entity.RemoveAbility(entry.Head.InstancedAbilityId);
                 break;
-            case AbilityInvokeArgument.AbilityActionCreateGadget:
+            case AbilityInvokeArgument.ActionCreateGadget:
                 var g = AbilityActionCreateGadget.Parser.ParseFrom(data);
                 if (!g.Pos.Equals(new Vector()))
                 {
@@ -69,10 +71,10 @@ public partial class World
                 Console.WriteLine($"new gadget spawned by: {entry.EntityId} bc of {JsonFormatter.Default.Format(entry.Head)}");
 
                 break;
-            case AbilityInvokeArgument.AbilityMetaTriggerElementReaction:
+            case AbilityInvokeArgument.MetaTriggerElementReaction:
                 var er = AbilityMetaTriggerElementReaction.Parser.ParseFrom(data);
-                var sourcetype = er.GFAPKLBLADP; // todo: confirm guesses
-                var reactortype = er.JNBEDFOKMPM;
+                var sourcetype = er.ElementSourceType;
+                var reactortype = er.ElementReactorType;
                 var triggerEntity = GetEntity(er.TriggerEntityId);
 
                 var owner = GetRootEntityOwner(triggerEntity);
@@ -121,7 +123,7 @@ public partial class World
         
         switch (entry.ArgumentType)
         {
-            case CombatTypeArgument.CombatEvtBeingHit:
+            case CombatTypeArgument.EvtBeingHit:
                 if(s == Sender.Client) break;
                 EvtBeingHitInfo info = EvtBeingHitInfo.Parser.ParseFrom(bytes);
 
@@ -192,7 +194,7 @@ public partial class World
                 et.CurrentPos = em.MotionInfo.Pos;
             }
                 break;
-            case CombatTypeArgument.CombatBeingHealedNtf:
+            case CombatTypeArgument.BeingHealedNtf:
                 break;
             default:
                 //CombatSteerMotionInfo

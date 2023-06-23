@@ -83,17 +83,17 @@ public partial class World
     {
         switch (info.EntityType)
         {
-            case ProtEntityType.ProtEntityAvatar:
+            case ProtEntityType.Avatar:
                 return new AvatarEntity(info);
-            case ProtEntityType.ProtEntityMonster:
+            case ProtEntityType.Monster:
                 var monst = new MonsterEntity(info);
                 monst.Owner = GetEntity(info.Monster.OwnerEntityId);
                 return monst;
-            case ProtEntityType.ProtEntityGadget:
+            case ProtEntityType.Gadget:
                 var gadg = new GadgetEntity(info);
                 gadg.Owner = GetEntity(info.Gadget.OwnerEntityId);
                 return gadg;
-            case ProtEntityType.ProtEntityNpc:
+            case ProtEntityType.Npc:
                 break;
         }
 

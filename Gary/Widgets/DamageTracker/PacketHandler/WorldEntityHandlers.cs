@@ -52,7 +52,7 @@ public partial class World
         foreach (var sei in notify.EntityList)
         {
             if(sei is null) continue;
-            if(sei.EntityType == ProtEntityType.ProtEntityAvatar) continue;
+            if(sei.EntityType == ProtEntityType.Avatar) continue;
             var et = FromSceneEntityInfo(sei);
             if(et is not null)
                 RegisterEntity(et);

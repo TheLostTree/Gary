@@ -178,7 +178,7 @@ public class EntityListWidget: IPacketConsumer, IWidget
                 // Console.WriteLine(filterEntity);
             }
 
-            if (filterEntity == ProtEntityType.ProtEntityNone)
+            if (filterEntity == ProtEntityType.None)
             {
                 //show all
                 for (int i = 0; i < entityTypes.Length; i++)
