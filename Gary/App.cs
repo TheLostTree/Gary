@@ -86,7 +86,7 @@ public class App
         while (_window.Exists)
         {
             var snapshot = _window.PumpEvents();
-            _imguiRenderer.Update(1f / 60f, snapshot); // [2]
+            _imguiRenderer.Update(1f / 20f, snapshot); // [2]
 
             
             DrawUi();
@@ -134,6 +134,7 @@ public class App
         }
     }
 
+    
     private void ShowMainMenu()
     {
         if (ui.BeginMainMenuBar())
@@ -160,6 +161,7 @@ public class App
         }
     }
 
+    private Stopwatch _stopwatch = new Stopwatch();
     private void DrawUi()
     {
         
@@ -177,8 +179,14 @@ public class App
 
         // ui.ShowDemoWindow();
         // shrug
+        _stopwatch.Restart();
         
         parsingstuff.ProcessAllQueuedPackets();
+        _stopwatch.Stop();
+        if (_stopwatch.ElapsedMilliseconds > 0)
+        {
+            Console.WriteLine($"process queued packets > 1ms : {_stopwatch.ElapsedMilliseconds}ms");
+        }
         // sw.Stop();
         // Console.WriteLine($"{sw.ElapsedMilliseconds}ms");
         
@@ -226,13 +234,14 @@ public class App
         ShowBaseScreen();
 
         if(!parsingstuff.HasStarted) return;
-        // Stopwatch sw = Stopwatch.StartNew();
+        
         foreach(IWidget widge in _widgets)
         {
+            
             if(widge.isShow) widge.DoUI();
+            
         }
-        // sw.Stop();
-        // Console.WriteLine($"widget ui: {sw.ElapsedMilliseconds}ms");
+
     }
 
 

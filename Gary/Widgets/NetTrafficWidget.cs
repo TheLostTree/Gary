@@ -252,7 +252,8 @@ public class NetTrafficWidget : IPacketConsumer, IWidget
     public void InsertPacket(AnimeGamePacket p)
     {
         _gamePackets.Add(p);
-        var repr = p.ProtoBuf is null ? messageIsNullText : JsonFormatter.Default.Format(p.ProtoBuf);
+        // var repr = p.ProtoBuf is null ? messageIsNullText : JsonFormatter.Default.Format(p.ProtoBuf);
+        var repr = "balls.";
         processed.Add(((++count).ToString(), p.Sender.ToString(), p.PacketType.ToString(), repr));
     }
 

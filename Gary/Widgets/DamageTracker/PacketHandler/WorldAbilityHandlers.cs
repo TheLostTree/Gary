@@ -73,8 +73,8 @@ public partial class World
                 break;
             case AbilityInvokeArgument.MetaTriggerElementReaction:
                 var er = AbilityMetaTriggerElementReaction.Parser.ParseFrom(data);
-                var sourcetype = er.ElementSourceType;
-                var reactortype = er.ElementReactorType;
+                // var sourcetype = er.ElementSourceType;
+                // var reactortype = er.ElementReactorType;
                 var triggerEntity = GetEntity(er.TriggerEntityId);
 
                 var owner = GetRootEntityOwner(triggerEntity);
@@ -82,7 +82,7 @@ public partial class World
                 {
                     Console.WriteLine("trigger entity is not owner");
                 }
-                Console.WriteLine($"{owner.GetFriendlyName()} triggered {((ElementalReactionType)er.ElementReactionType).ToString()}");
+                // Console.WriteLine($"{owner.GetFriendlyName()} triggered {((ElementalReactionType)er.ElementReactionType).ToString()}");
                 break;
             default:
                 break;
@@ -141,7 +141,8 @@ public partial class World
                         var instancedAbilityId = info.AttackResult.AbilityIdentifier?.InstancedAbilityId;
                         var instancedModifierId = info.AttackResult.AbilityIdentifier?.InstancedModifierId;
 
-                        var modifierOwnerId = info.AttackResult.AbilityIdentifier?.ModifierOwnerId;
+                        //TODO: this is guessed.
+                        var modifierOwnerId = info.AttackResult.AbilityIdentifier?.BKJOIGAMEAM;
                         BaseEntity? modifierOwner = null;
                         if (modifierOwnerId is not null)
                         {

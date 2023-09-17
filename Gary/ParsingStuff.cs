@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using DNToolKit.Configuration.Models;
 using SharpPcap.LibPcap;
 using DNToolKit;
@@ -56,15 +57,37 @@ public class ParsingStuff : IDisposable
         await dntk.RunAsync();
     }
 
-    public void ProcessAllQueuedPackets()
+    private Stopwatch sw = new Stopwatch();
+
+    public int ProcessAllQueuedPackets()
     {
-        while (packets.TryDequeue(out var p))
+        int incr = 0;
+        if (packets.Count == 0) return 0;
+        Console.WriteLine("----start");
+
+
+        while (packets.TryDequeue(out var p) )
         {
+            if (incr > 2) break;
+            Console.WriteLine($"yay packet {p.PacketType}");
+            
             foreach (var x in consumers)
             {
+                sw.Restart();
                 x.InsertPacket(p);
+                sw.Stop();
+                // if (sw.ElapsedMilliseconds > 1)
+                // {
+                // }
+                Console.WriteLine($"consumer {x} >= 1ms {sw.ElapsedMilliseconds}");
+
             }
+
+            incr++;
         }
+        Console.WriteLine("----end");
+
+        return incr;
     }
 
     private string? intfname;

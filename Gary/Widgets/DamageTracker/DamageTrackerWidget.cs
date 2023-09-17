@@ -17,9 +17,38 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
 {
     private World world = new World();
 
+    private Thread t;
+    private Queue<AnimeGamePacket> packQueue = new();
+
+    private object lockobj = new object();
+
     public void InsertPacket(AnimeGamePacket p)
     {
+        packQueue.Enqueue(p);
+    }
+
+    private void ThreadMain()
+    {
+        while (true)
+        {
+            while (packQueue.TryDequeue(out var p))
+            {
+                lock (lockobj)
+                {
+                    ProcessPacket(p);
+                }
+            }
+            
+            Thread.Sleep((1/60) * 1000);
+        }
+        
+    }
+
+    private void ProcessPacket(AnimeGamePacket p)
+    {
+        
         if(p.ProtoBuf is null) return;
+
         
         world.now = p.Metadata?.SentMs ?? world.now;
         
@@ -27,87 +56,86 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
         bool final = false;
         // try
         // {
-            switch (p.PacketType)
-            {
-                case Opcode.SceneEntityDisappearNotify:
-                    var sedn = (SceneEntityDisappearNotify)msg;
-                    world.OnSceneDisappearNotify(sedn);
-                    break;
-                case Opcode.SceneEntityAppearNotify:
-                    var sean = (SceneEntityAppearNotify)msg;
-                    world.OnSceneEntityAppear(sean);
-                    break;
-                case Opcode.SceneTeamUpdateNotify:
-                    var stun = (SceneTeamUpdateNotify)msg;
-                    world.OnSceneTeamUpdate(stun);
-                    break;
-                case Opcode.UnionCmdNotify:
-                    var ucn = (UnionCmdNotify)msg;
-                    foreach (var unionCmd in ucn.CmdList)
-                    {
-                        var pkt = AnimeGamePacket.ParseRaw(unionCmd.Body.ToByteArray(), p.MetadataBytes,unionCmd.MessageId,
-                            Sender.Client);
-                        InsertPacket(pkt);
-                    }
+        switch (p.PacketType)
+        {
+            case Opcode.SceneEntityDisappearNotify:
+                var sedn = (SceneEntityDisappearNotify)msg;
+                world.OnSceneDisappearNotify(sedn);
+                break;
+            case Opcode.SceneEntityAppearNotify:
+                var sean = (SceneEntityAppearNotify)msg;
+                world.OnSceneEntityAppear(sean);
+                break;
+            case Opcode.SceneTeamUpdateNotify:
+                var stun = (SceneTeamUpdateNotify)msg;
+                world.OnSceneTeamUpdate(stun);
+                break;
+            case Opcode.UnionCmdNotify:
+                var ucn = (UnionCmdNotify)msg;
+                foreach (var unionCmd in ucn.CmdList)
+                {
+                    var pkt = AnimeGamePacket.ParseRaw(unionCmd.Body.ToByteArray(), p.MetadataBytes,unionCmd.MessageId,
+                        Sender.Client);
+                    InsertPacket(pkt);
+                }
 
-                    break;
-                case Opcode.ClientAbilityInitFinishNotify:
-                    world.OnClientAbilityInitFinish((ClientAbilityInitFinishNotify)msg);
-                    break;
-                case Opcode.ClientAbilityChangeNotify:
-                    world.OnClientAbilityChange((ClientAbilityChangeNotify)msg);
-                    break;
-                case Opcode.AbilityChangeNotify:
-                    world.OnAbilityChange((AbilityChangeNotify)msg);
-                    break;
-                case Opcode.AbilityInvocationsNotify:
-                    var ain = (AbilityInvocationsNotify)msg;
-                    foreach (var abilityInvokeEntry in ain.Invokes)
-                    {
-                        world.OnAbilityInvoke(abilityInvokeEntry);
-                    }
+                break;
+            case Opcode.ClientAbilityInitFinishNotify:
+                world.OnClientAbilityInitFinish((ClientAbilityInitFinishNotify)msg);
+                break;
+            case Opcode.ClientAbilityChangeNotify:
+                world.OnClientAbilityChange((ClientAbilityChangeNotify)msg);
+                break;
+            case Opcode.AbilityChangeNotify:
+                world.OnAbilityChange((AbilityChangeNotify)msg);
+                break;
+            case Opcode.AbilityInvocationsNotify:
+                var ain = (AbilityInvocationsNotify)msg;
+                foreach (var abilityInvokeEntry in ain.Invokes)
+                {
+                    world.OnAbilityInvoke(abilityInvokeEntry);
+                }
 
-                    break;
-                case Opcode.CombatInvocationsNotify:
-                    //trust server invokes more
-                    var cin = (CombatInvocationsNotify)msg;
-                    foreach (var combatInvokeEntry in cin.InvokeList)
-                    {
-                        world.OnCombatInvoke(combatInvokeEntry, p.Sender);
-                    }
+                break;
+            case Opcode.CombatInvocationsNotify:
+                //trust server invokes more
+                var cin = (CombatInvocationsNotify)msg;
+                foreach (var combatInvokeEntry in cin.InvokeList)
+                {
+                    world.OnCombatInvoke(combatInvokeEntry, p.Sender);
+                }
 
-                    break;
-                case Opcode.EvtCreateGadgetNotify:
-                    world.OnGadgetCreate((EvtCreateGadgetNotify)msg);
-                    break;
-                case Opcode.EvtDestroyGadgetNotify:
-                    world.OnGadgetDestroy((EvtDestroyGadgetNotify)msg);
-                    break;
-                case Opcode.EntityFightPropNotify:
-                    world.OnEntityFightProp((EntityFightPropNotify)msg);
-                    break;
-                case Opcode.EntityFightPropUpdateNotify:
-                    world.OnEntityFightPropUpdate((EntityFightPropUpdateNotify)msg);
-                    break;
-                case Opcode.AvatarFightPropUpdateNotify:
-                case Opcode.AvatarFightPropNotify:
-                    break;
-                default:
-                    final = true;
-                    break;
-            }
+                break;
+            case Opcode.EvtCreateGadgetNotify:
+                world.OnGadgetCreate((EvtCreateGadgetNotify)msg);
+                break;
+            case Opcode.EvtDestroyGadgetNotify:
+                world.OnGadgetDestroy((EvtDestroyGadgetNotify)msg);
+                break;
+            case Opcode.EntityFightPropNotify:
+                world.OnEntityFightProp((EntityFightPropNotify)msg);
+                break;
+            case Opcode.EntityFightPropUpdateNotify:
+                world.OnEntityFightPropUpdate((EntityFightPropUpdateNotify)msg);
+                break;
+            case Opcode.AvatarFightPropUpdateNotify:
+            case Opcode.AvatarFightPropNotify:
+                break;
+            default:
+                final = true;
+                break;
+        }
 
-            if (!final)
-            {
-                // Console.WriteLine(p.PacketType.ToString());
-            }
+        if (!final)
+        {
+            // Console.WriteLine(p.PacketType.ToString());
+        }
         // }
         // catch (Exception e)
         // {
         //     // Console.WriteLine(e.ToString());
         //     throw e;
         // }
-        
     }
 
 
@@ -203,6 +231,7 @@ public class DamageTrackerWidget: IPacketConsumer, IWidget
     public DamageTrackerWidget()
     {
         WidgetName = "Damage Tracker";
+        t = new Thread(ThreadMain);
     }
 
     public string WidgetName { get; }
