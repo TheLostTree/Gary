@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using Common;
 using Common.Protobuf;
+using DNToolKit;
 using DNToolKit.AnimeGame;
 using Gary.Interfaces;
 using Google.Protobuf;
@@ -13,13 +14,13 @@ using ui = ImGuiNET.ImGui;
 public class EntityListWidget: IPacketConsumer, IWidget
 {
     
-    public void InsertPacket(AnimeGamePacket p)
+    public void InsertPacket(TrafficInstance.TrafficPacket p)
     {
 
-        if(p.ProtoBuf is null) return;
+        if(!p.ParseResult.Success) return;
         
-        var msg = p.ProtoBuf!;
-        switch (p.PacketType)
+        var msg = p.ParseResult.Packet!;
+        switch (p.code)
         {
             case Opcode.SceneEntityDisappearNotify:
                 var sedn = (SceneEntityDisappearNotify)msg;

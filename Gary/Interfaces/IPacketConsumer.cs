@@ -1,8 +1,9 @@
-﻿using DNToolKit.AnimeGame;
+﻿using DNToolKit;
+
 
 namespace Gary.Interfaces;
 
 public interface IPacketConsumer
 {
-    public void InsertPacket(AnimeGamePacket p);
+    public void InsertPacket(TrafficInstance.TrafficPacket p);
 }

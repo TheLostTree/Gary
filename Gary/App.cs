@@ -28,7 +28,6 @@ public class App
             new WindowCreateInfo(50, 50, 960, 540, WindowState.Normal, "Gary Toolkit"),
             out _window,
             out _gd);
-        _window.SetCloseRequestedHandler(OnCloseAttempt);
 
         _cl = _gd.ResourceFactory.CreateCommandList();
 
@@ -48,16 +47,6 @@ public class App
         descs = _interfaces.Select(x => $"{x.Name} - {x.Description}").ToArray();
     }
 
-    private bool OnCloseAttempt()
-    {
-        if (parsingstuff is not null)
-        {
-            parsingstuff.Dispose();
-        }
-
-        return false;
-    }
-
     private IEnumerable<PcapInterface> _interfaces = DNToolKit.DNToolKit.GetAllNetworkInterfaces();
     private string[] descs;
 
@@ -67,14 +56,13 @@ public class App
     {
         parsingstuff = new ParsingStuff();
         var netwidge = new NetTrafficWidget();
-        var entitywidge = new EntityListWidget();
-        var damagetrack = new DamageTrackerWidget();
+        // var entitywidge = new EntityListWidget();
+        // var damagetrack = new DamageTrackerWidget();
         _widgets.Add(netwidge);
-        _widgets.Add(entitywidge);
-        _widgets.Add(damagetrack);
+        // _widgets.Add(entitywidge);
+        // _widgets.Add(damagetrack);
         parsingstuff.consumers.Add(netwidge);
-        parsingstuff.consumers.Add(entitywidge);
-        parsingstuff.consumers.Add(damagetrack);
+        
     }
 
     public void Start()
@@ -129,7 +117,6 @@ public class App
         if (ui.MenuItem("Reset Pcap interface"))
         {
             //todo: ensure old one is disposed in an actually clean way
-            parsingstuff.Dispose();
             parsingstuff = new ParsingStuff();
         }
     }

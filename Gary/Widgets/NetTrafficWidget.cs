@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Globalization;
 using System.Reflection;
-using DNToolKit.AnimeGame;
+using DNToolKit;
 using Gary.Interfaces;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
@@ -14,7 +14,7 @@ using ui = ImGuiNET.ImGui;
 
 public class NetTrafficWidget : IPacketConsumer, IWidget
 {
-    private List<AnimeGamePacket> _gamePackets = new();
+    private List<TrafficInstance.TrafficPacket> _gamePackets = new();
     private List<(string, string, string, string)> processed = new();
     private int count = 0;
 
